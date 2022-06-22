@@ -32,10 +32,26 @@ type RSCTSpec struct {
 	Foo string `json:"foo,omitempty"`
 }
 
+// Represents an output from rmcdomainstatus
+// See https://www.ibm.com/docs/en/aix/7.2?topic=r-rmcdomainstatus-command
+type NodePodStatus struct {
+	TokenOne           string `json:"nodePodToken1,omitempty"`
+	TokenTwo           string `json:"nodePodToken2,omitempty"`
+	NodeID             string `json:"nodeID,omitempty"`
+	InternalNodeNumber string `json:"internalNodeNumber,omitempty"`
+	IPAddress          string `json:"ipAddress,omitempty"`
+}
+
+type NodePod struct {
+	PodName string        `json:"nodePodName"`
+	Status  NodePodStatus `json:"nodePodStatus,omitempty"`
+}
+
 // RSCTStatus defines the observed state of RSCT
 type RSCTStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	NodePods []NodePod `json:"nodes"`
 }
 
 //+kubebuilder:object:root=true
