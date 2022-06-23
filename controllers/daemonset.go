@@ -28,6 +28,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	utilpointer "k8s.io/utils/pointer"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
@@ -232,4 +233,21 @@ func rsctDaemonSetChanged(current, expected *appsv1.DaemonSet) (bool, *appsv1.Da
 	//updated := current.DeepCopy()
 	//TODO(mjturek): Do what the comment says
 	return false, nil
+}
+
+func (r *RSCTReconciler) getRSCTDaemonSetPodList(ctx context.Context) (*corev1.PodList, error) {
+	matchLabels := map[string]string{
+		"app": "powervm-rmc",
+	}
+
+	// List the pods that are part of the daemonset
+	podList := &corev1.PodList{}
+	listOpts := []client.ListOption{
+		client.InNamespace(r.Config.Namespace),
+		client.MatchingLabels(matchLabels),
+	}
+	if err := r.Client.List(ctx, podList, listOpts...); err != nil {
+		return nil, err
+	}
+	return podList, nil
 }
