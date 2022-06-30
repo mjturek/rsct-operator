@@ -49,6 +49,7 @@ type RSCTReconciler struct {
 //+kubebuilder:rbac:groups=rsct.ibm.com,resources=rscts/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=rsct.ibm.com,resources=rscts/finalizers,verbs=update
 //+kubebuilder:rbac:groups=apps,resources=daemonsets,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterrolebindings,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
 
 // the RSCT object against the actual cluster state, and then
@@ -76,6 +77,13 @@ func (r *RSCTReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return reconcile.Result{}, fmt.Errorf("failed to ensure powervm-rmc service account: %w", err)
 	} else if !haveServiceAccount {
 		return reconcile.Result{}, fmt.Errorf("failed to get powervm-rmc service account: %w", err)
+	}
+
+	haveClusterRoleBinding, err := r.ensureRSCTClusterRoleBinding(ctx, rsct, sa)
+	if err != nil {
+		return reconcile.Result{}, fmt.Errorf("failed to ensure powervm-rmc cluster role binding: %w", err)
+	} else if !haveClusterRoleBinding {
+		return reconcile.Result{}, fmt.Errorf("failed to get powervm-rmc cluster role binding: %w", err)
 	}
 
 	_, currentDaemonSet, err := r.ensureRSCTDaemonSet(ctx, sa, rsct)
